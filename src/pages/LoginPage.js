@@ -57,6 +57,7 @@ const LoginPage = () => {
 
           <form onSubmit={handleSubmit} className="auth-form">
             {error && <div className="error-message">{error}</div>}
+            }
             
             <div className="form-group">
               <input
