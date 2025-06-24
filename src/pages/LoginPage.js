@@ -1,45 +1,102 @@
-// src/pages/LoginPage.js
 import React, { useState } from 'react';
-import { supabase } from '../supabaseClient';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const { signIn } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    const { error } = await signIn(formData.email, formData.password);
+    
     if (error) {
-      alert(error.message);
+      setError(error.message);
     } else {
       navigate('/dashboard');
     }
+    setLoading(false);
   };
 
   return (
-    <div className="container">
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        /><br />
-        <button type="submit">Login</button>
-        <p>Don't have an account? <span onClick={() => navigate('/')} style={{cursor: "pointer", color: "#6c63ff"}}>Register</span></p>
-      </form>
+    <div className="auth-page">
+      <div className="animated-bg">
+        <div className="floating-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+        </div>
+      </div>
+
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">
+              <span className="logo-icon">🔐</span>
+              <span className="logo-text">CredHex</span>
+            </div>
+            <h2>Welcome Back</h2>
+            <p>Sign in to your secure vault</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="auth-form">
+            {error && <div className="error-message">{error}</div>}
+            
+            <div className="form-group">
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                className="form-input"
+              />
+            </div>
+
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                className="form-input"
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="btn-primary full-width"
+              disabled={loading}
+            >
+              {loading ? 'Signing In...' : 'Sign In'}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>Don't have an account? <Link to="/register">Create Account</Link></p>
+            <p><Link to="/">← Back to Home</Link></p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
